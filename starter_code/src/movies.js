@@ -13,9 +13,9 @@ function dramaMoviesRate(movies) {
 
 // Order by time duration, ascending
 function orderByDuration(movies) {
-  return sorted = movies.sort((a, b) => {
+  return movies.sort((a, b) => {
     if (getTimeInMinutes(a.duration) - getTimeInMinutes(b.duration) == 0) {
-      return a.title > b.title ? 1 : -1; //I'm assuming no two movies have the exact same name
+      return a.title.localeCompare(b.title);
     }
     return(getTimeInMinutes(a.duration) - getTimeInMinutes(b.duration));
   });
@@ -23,7 +23,7 @@ function orderByDuration(movies) {
 
 function getTimeInMinutes(timeString) {
   let hrsMins = timeString.toString().split(' ');
-  if (hrsMins[0][hrsMins[0].length - 1] != 'h') {
+  if (hrsMins[0].indexOf('h') == -1) {
     return parseInt(hrsMins[0], 10);
   } else {
     let mins = parseInt(hrsMins.shift(),10)*60;
@@ -40,32 +40,33 @@ function howManyMovies(movies) {
 
 // Order by title and print the first 20 titles
 function orderAlphabetically(movies) {
-  var sorted = movies.sort((a, b) => a.title > b.title ? 1 : -1);
-  return sorted.map(movie => movie.title).slice(0, 20);
+  return movies.map(movie => movie.title).sort().slice(0, 20);
 }
 
 // Best yearly rate average
 function bestYearAvg(movies) {
   if (!movies.length) return null;
+
+  //reduce to an object with a property for each year, which is used to store an object containing the year name, count of movies that year, and the sum of their ratings
   let moviesByYear = movies.reduce((allYears, movie) => {
     let year = movie.year;
     if (year in allYears) {
       allYears[year].count++;
       allYears[year].ratingSum += parseFloat(movie.rate);
     } else {
-      let yearObj = {name: year, count: 1, ratingSum: parseFloat(movie.rate)};
-      allYears[year] = yearObj;
+      allYears[year] = {name: year, count: 1, ratingSum: parseFloat(movie.rate)};
     }
     return allYears;
   }, {});
   
+  // get the {year, count, rating sum} objects as an array, so we can sort it.
   var yearsArray = Object.values(moviesByYear);
 
   let sorted = yearsArray.sort((a, b) => {
     if (a.ratingSum/a.count === b.ratingSum/b.count) {
-      return parseInt(a.name,10) - parseInt(b.name,10);
+      return a.name.localeCompare(b.name); 
     } else {
-      return b.ratingSum/b.count - a.ratingSum/a.count;
+      return b.ratingSum/b.count - a.ratingSum/a.count; 
     }
   });
   return `The best year was ${sorted[0].name} with an average rate of ${sorted[0].ratingSum/sorted[0].count}`;
